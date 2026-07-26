@@ -51,9 +51,7 @@ export const Route = createFileRoute("/api/public/pay/$code/order")({
         if (totalMinor <= 0) return json({ error: "Invalid amount" }, 400);
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        // Generated Supabase types intentionally lag the additive Cashfree migration.
-        // Keep the cast local until types are regenerated from the deployed schema.
-        const db = supabaseAdmin as any;
+        const db = supabaseAdmin;
         const { data: linkRow } = await db
           .from("payment_links")
           .select("id, client_email, client_phone, expires_at")
