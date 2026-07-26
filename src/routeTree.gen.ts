@@ -9,38 +9,233 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SetupRouteImport } from './routes/setup'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PayCodeRouteImport } from './routes/pay.$code'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedLinksIndexRouteImport } from './routes/_authenticated/links.index'
+import { Route as PayCodeSuccessRouteImport } from './routes/pay.$code.success'
+import { Route as AuthenticatedLinksNewRouteImport } from './routes/_authenticated/links.new'
+import { Route as AuthenticatedLinksIdRouteImport } from './routes/_authenticated/links.$id'
+import { Route as ApiPublicRazorpayWebhookRouteImport } from './routes/api/public/razorpay.webhook'
+import { Route as ApiPublicPayCodeRouteImport } from './routes/api/public/pay.$code'
+import { Route as ApiPublicPayCodeVerifyRouteImport } from './routes/api/public/pay.$code.verify'
+import { Route as ApiPublicPayCodeOrderRouteImport } from './routes/api/public/pay.$code.order'
 
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PayCodeRoute = PayCodeRouteImport.update({
+  id: '/pay/$code',
+  path: '/pay/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLinksIndexRoute = AuthenticatedLinksIndexRouteImport.update({
+  id: '/links/',
+  path: '/links/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const PayCodeSuccessRoute = PayCodeSuccessRouteImport.update({
+  id: '/success',
+  path: '/success',
+  getParentRoute: () => PayCodeRoute,
+} as any)
+const AuthenticatedLinksNewRoute = AuthenticatedLinksNewRouteImport.update({
+  id: '/links/new',
+  path: '/links/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLinksIdRoute = AuthenticatedLinksIdRouteImport.update({
+  id: '/links/$id',
+  path: '/links/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiPublicRazorpayWebhookRoute =
+  ApiPublicRazorpayWebhookRouteImport.update({
+    id: '/api/public/razorpay/webhook',
+    path: '/api/public/razorpay/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicPayCodeRoute = ApiPublicPayCodeRouteImport.update({
+  id: '/api/public/pay/$code',
+  path: '/api/public/pay/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPayCodeVerifyRoute = ApiPublicPayCodeVerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => ApiPublicPayCodeRoute,
+} as any)
+const ApiPublicPayCodeOrderRoute = ApiPublicPayCodeOrderRouteImport.update({
+  id: '/order',
+  path: '/order',
+  getParentRoute: () => ApiPublicPayCodeRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/setup': typeof SetupRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/pay/$code': typeof PayCodeRouteWithChildren
+  '/links/$id': typeof AuthenticatedLinksIdRoute
+  '/links/new': typeof AuthenticatedLinksNewRoute
+  '/pay/$code/success': typeof PayCodeSuccessRoute
+  '/links/': typeof AuthenticatedLinksIndexRoute
+  '/api/public/pay/$code': typeof ApiPublicPayCodeRouteWithChildren
+  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
+  '/api/public/pay/$code/order': typeof ApiPublicPayCodeOrderRoute
+  '/api/public/pay/$code/verify': typeof ApiPublicPayCodeVerifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/setup': typeof SetupRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/pay/$code': typeof PayCodeRouteWithChildren
+  '/links/$id': typeof AuthenticatedLinksIdRoute
+  '/links/new': typeof AuthenticatedLinksNewRoute
+  '/pay/$code/success': typeof PayCodeSuccessRoute
+  '/links': typeof AuthenticatedLinksIndexRoute
+  '/api/public/pay/$code': typeof ApiPublicPayCodeRouteWithChildren
+  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
+  '/api/public/pay/$code/order': typeof ApiPublicPayCodeOrderRoute
+  '/api/public/pay/$code/verify': typeof ApiPublicPayCodeVerifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/setup': typeof SetupRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/pay/$code': typeof PayCodeRouteWithChildren
+  '/_authenticated/links/$id': typeof AuthenticatedLinksIdRoute
+  '/_authenticated/links/new': typeof AuthenticatedLinksNewRoute
+  '/pay/$code/success': typeof PayCodeSuccessRoute
+  '/_authenticated/links/': typeof AuthenticatedLinksIndexRoute
+  '/api/public/pay/$code': typeof ApiPublicPayCodeRouteWithChildren
+  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
+  '/api/public/pay/$code/order': typeof ApiPublicPayCodeOrderRoute
+  '/api/public/pay/$code/verify': typeof ApiPublicPayCodeVerifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/setup'
+    | '/dashboard'
+    | '/settings'
+    | '/pay/$code'
+    | '/links/$id'
+    | '/links/new'
+    | '/pay/$code/success'
+    | '/links/'
+    | '/api/public/pay/$code'
+    | '/api/public/razorpay/webhook'
+    | '/api/public/pay/$code/order'
+    | '/api/public/pay/$code/verify'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/setup'
+    | '/dashboard'
+    | '/settings'
+    | '/pay/$code'
+    | '/links/$id'
+    | '/links/new'
+    | '/pay/$code/success'
+    | '/links'
+    | '/api/public/pay/$code'
+    | '/api/public/razorpay/webhook'
+    | '/api/public/pay/$code/order'
+    | '/api/public/pay/$code/verify'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/setup'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/settings'
+    | '/pay/$code'
+    | '/_authenticated/links/$id'
+    | '/_authenticated/links/new'
+    | '/pay/$code/success'
+    | '/_authenticated/links/'
+    | '/api/public/pay/$code'
+    | '/api/public/razorpay/webhook'
+    | '/api/public/pay/$code/order'
+    | '/api/public/pay/$code/verify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  SetupRoute: typeof SetupRoute
+  PayCodeRoute: typeof PayCodeRouteWithChildren
+  ApiPublicPayCodeRoute: typeof ApiPublicPayCodeRouteWithChildren
+  ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +243,138 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pay/$code': {
+      id: '/pay/$code'
+      path: '/pay/$code'
+      fullPath: '/pay/$code'
+      preLoaderRoute: typeof PayCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/links/': {
+      id: '/_authenticated/links/'
+      path: '/links'
+      fullPath: '/links/'
+      preLoaderRoute: typeof AuthenticatedLinksIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/pay/$code/success': {
+      id: '/pay/$code/success'
+      path: '/success'
+      fullPath: '/pay/$code/success'
+      preLoaderRoute: typeof PayCodeSuccessRouteImport
+      parentRoute: typeof PayCodeRoute
+    }
+    '/_authenticated/links/new': {
+      id: '/_authenticated/links/new'
+      path: '/links/new'
+      fullPath: '/links/new'
+      preLoaderRoute: typeof AuthenticatedLinksNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/links/$id': {
+      id: '/_authenticated/links/$id'
+      path: '/links/$id'
+      fullPath: '/links/$id'
+      preLoaderRoute: typeof AuthenticatedLinksIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/razorpay/webhook': {
+      id: '/api/public/razorpay/webhook'
+      path: '/api/public/razorpay/webhook'
+      fullPath: '/api/public/razorpay/webhook'
+      preLoaderRoute: typeof ApiPublicRazorpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/pay/$code': {
+      id: '/api/public/pay/$code'
+      path: '/api/public/pay/$code'
+      fullPath: '/api/public/pay/$code'
+      preLoaderRoute: typeof ApiPublicPayCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/pay/$code/verify': {
+      id: '/api/public/pay/$code/verify'
+      path: '/verify'
+      fullPath: '/api/public/pay/$code/verify'
+      preLoaderRoute: typeof ApiPublicPayCodeVerifyRouteImport
+      parentRoute: typeof ApiPublicPayCodeRoute
+    }
+    '/api/public/pay/$code/order': {
+      id: '/api/public/pay/$code/order'
+      path: '/order'
+      fullPath: '/api/public/pay/$code/order'
+      preLoaderRoute: typeof ApiPublicPayCodeOrderRouteImport
+      parentRoute: typeof ApiPublicPayCodeRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedLinksIdRoute: typeof AuthenticatedLinksIdRoute
+  AuthenticatedLinksNewRoute: typeof AuthenticatedLinksNewRoute
+  AuthenticatedLinksIndexRoute: typeof AuthenticatedLinksIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedLinksIdRoute: AuthenticatedLinksIdRoute,
+  AuthenticatedLinksNewRoute: AuthenticatedLinksNewRoute,
+  AuthenticatedLinksIndexRoute: AuthenticatedLinksIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+interface PayCodeRouteChildren {
+  PayCodeSuccessRoute: typeof PayCodeSuccessRoute
+}
+
+const PayCodeRouteChildren: PayCodeRouteChildren = {
+  PayCodeSuccessRoute: PayCodeSuccessRoute,
+}
+
+const PayCodeRouteWithChildren =
+  PayCodeRoute._addFileChildren(PayCodeRouteChildren)
+
+interface ApiPublicPayCodeRouteChildren {
+  ApiPublicPayCodeOrderRoute: typeof ApiPublicPayCodeOrderRoute
+  ApiPublicPayCodeVerifyRoute: typeof ApiPublicPayCodeVerifyRoute
+}
+
+const ApiPublicPayCodeRouteChildren: ApiPublicPayCodeRouteChildren = {
+  ApiPublicPayCodeOrderRoute: ApiPublicPayCodeOrderRoute,
+  ApiPublicPayCodeVerifyRoute: ApiPublicPayCodeVerifyRoute,
+}
+
+const ApiPublicPayCodeRouteWithChildren =
+  ApiPublicPayCodeRoute._addFileChildren(ApiPublicPayCodeRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  SetupRoute: SetupRoute,
+  PayCodeRoute: PayCodeRouteWithChildren,
+  ApiPublicPayCodeRoute: ApiPublicPayCodeRouteWithChildren,
+  ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
