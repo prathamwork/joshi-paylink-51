@@ -146,8 +146,7 @@ export function verifyCashfreeWebhookSignature(
   if (!timestamp || !signature) return false;
 
   const { clientSecret } = requireCashfreeEnv();
-  const webhookSecret = process.env.CASHFREE_WEBHOOK_SECRET || clientSecret;
-  const expected = createHmac("sha256", webhookSecret)
+  const expected = createHmac("sha256", clientSecret)
     .update(timestamp + rawBody)
     .digest("base64");
 
@@ -166,8 +165,6 @@ export function isFreshCashfreeWebhook(timestamp: string, maxAgeMs = 10 * 60 * 1
 function normalizePhone(value?: string | null) {
   const digits = (value ?? "").replace(/\D/g, "");
   if (digits.length >= 7 && digits.length <= 15) return digits;
-  // Cashfree requires a phone field. This neutral fallback is used only when the
-  // owner did not store the customer's phone number on the payment request.
   return "9999999999";
 }
 
