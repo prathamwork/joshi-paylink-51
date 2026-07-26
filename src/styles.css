@@ -56,9 +56,9 @@
   --background: oklch(0.16 0.03 260);
   --foreground: oklch(0.97 0.01 250);
 
-  --card: oklch(0.20 0.03 260);
+  --card: oklch(0.2 0.03 260);
   --card-foreground: oklch(0.97 0.01 250);
-  --popover: oklch(0.20 0.03 260);
+  --popover: oklch(0.2 0.03 260);
   --popover-foreground: oklch(0.97 0.01 250);
 
   --primary: oklch(0.82 0.16 165);
@@ -92,7 +92,8 @@
   --chart-5: oklch(0.68 0.2 20);
 
   --gradient-brand: linear-gradient(135deg, oklch(0.82 0.16 165), oklch(0.72 0.16 210));
-  --gradient-hero: radial-gradient(ellipse at top, oklch(0.28 0.08 200 / 0.5), transparent 60%),
+  --gradient-hero:
+    radial-gradient(ellipse at top, oklch(0.28 0.08 200 / 0.5), transparent 60%),
     radial-gradient(ellipse at bottom right, oklch(0.28 0.12 170 / 0.35), transparent 55%);
   --shadow-glow: 0 20px 60px -20px oklch(0.75 0.18 175 / 0.5);
   --shadow-card: 0 30px 80px -30px oklch(0 0 0 / 0.6);
@@ -103,16 +104,28 @@
 }
 
 @layer base {
-  html, body {
+  html,
+  body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  * { border-color: var(--color-border); }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
-  ::selection { background: oklch(0.75 0.18 175 / 0.35); color: var(--color-foreground); }
+  * {
+    border-color: var(--color-border);
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  ::selection {
+    background: oklch(0.75 0.18 175 / 0.35);
+    color: var(--color-foreground);
+  }
 }
 
 @utility bg-hero-grid {
@@ -121,10 +134,18 @@
     linear-gradient(90deg, oklch(1 0 0 / 0.04) 1px, transparent 1px);
   background-size: 44px 44px;
 }
-@utility bg-hero-glow { background-image: var(--gradient-hero); }
-@utility bg-brand-gradient { background-image: var(--gradient-brand); }
-@utility shadow-glow { box-shadow: var(--shadow-glow); }
-@utility shadow-card { box-shadow: var(--shadow-card); }
+@utility bg-hero-glow {
+  background-image: var(--gradient-hero);
+}
+@utility bg-brand-gradient {
+  background-image: var(--gradient-brand);
+}
+@utility shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
 @utility glass {
   background: color-mix(in oklab, var(--card) 70%, transparent);
   backdrop-filter: blur(14px) saturate(140%);

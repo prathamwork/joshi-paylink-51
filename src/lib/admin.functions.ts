@@ -13,7 +13,7 @@ export const getMe = createServerFn({ method: "GET" })
       .from("user_roles")
       .select("role")
       .eq("user_id", context.userId);
-    return { email, isAdmin: (roles ?? []).some((r) => r.role === "admin") };
+    return { email, isAdmin: (roles ?? []).some((role) => role.role === "admin") };
   });
 
 export const getDashboardStats = createServerFn({ method: "GET" })
@@ -21,59 +21,91 @@ export const getDashboardStats = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     assertOwner(context.claims);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin;
 
     const [links, attempts] = await Promise.all([
-      supabaseAdmin.from("payment_links").select("id,status,currency,base_amount_minor,created_at,client_name,project_title,public_code").order("created_at", { ascending: false }),
-      supabaseAdmin.from("payment_attempts").select("id,link_id,status,base_amount_minor,tip_amount_minor,total_amount_minor,currency,razorpay_payment_id,created_at").eq("status", "captured").order("created_at", { ascending: false }).limit(10),
+      db
+        .from("payment_links")
+        .select(
+          "id,status,currency,base_amount_minor,created_at,client_name,project_title,public_code",
+        )
+        .order("created_at", { ascending: false }),
+      db
+        .from("payment_attempts")
+        .select(
+          "id,link_id,status,base_amount_minor,tip_amount_minor,total_amount_minor,currency,cashfree_payment_id,bank_reference,created_at",
+        )
+        .eq("provider", "cashfree")
+        .eq("status", "success")
+        .order("created_at", { ascending: false })
+        .limit(10),
     ]);
 
     const allLinks = links.data ?? [];
-    const captured = attempts.data ?? [];
-
-    // totals grouped by currency (minor)
+    const successful = attempts.data ?? [];
     const collected: Record<string, number> = {};
     const tips: Record<string, number> = {};
-    for (const a of captured) {
-      collected[a.currency] = (collected[a.currency] ?? 0) + Number(a.total_amount_minor);
-      tips[a.currency] = (tips[a.currency] ?? 0) + Number(a.tip_amount_minor);
+
+    for (const attempt of successful) {
+      collected[attempt.currency] =
+        (collected[attempt.currency] ?? 0) + Number(attempt.total_amount_minor);
+      tips[attempt.currency] = (tips[attempt.currency] ?? 0) + Number(attempt.tip_amount_minor);
     }
 
     return {
       collectedByCurrency: collected,
       tipsByCurrency: tips,
-      paidCount: allLinks.filter((l) => l.status === "paid").length,
-      pendingCount: allLinks.filter((l) => l.status === "active").length,
+      paidCount: allLinks.filter((link) => link.status === "paid").length,
+      pendingCount: allLinks.filter((link) => link.status === "active").length,
       totalLinks: allLinks.length,
-      recentPayments: captured.map((a) => {
-        const link = allLinks.find((l) => l.id === a.link_id);
-        return { ...a, link_client: link?.client_name ?? "—", link_project: link?.project_title ?? "—", link_code: link?.public_code };
+      recentPayments: successful.map((attempt) => {
+        const link = allLinks.find((candidate) => candidate.id === attempt.link_id);
+        return {
+          ...attempt,
+          link_client: link?.client_name ?? "—",
+          link_project: link?.project_title ?? "—",
+          link_code: link?.public_code,
+        };
       }),
     };
   });
 
 export const listLinks = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { status?: string; q?: string } | undefined) => d ?? {})
+  .inputValidator((data: { status?: string; q?: string } | undefined) => data ?? {})
   .handler(async ({ data, context }) => {
     assertOwner(context.claims);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    let q = supabaseAdmin.from("payment_links").select("*").order("created_at", { ascending: false }).limit(200);
-    if (data.status && data.status !== "all") q = q.eq("status", data.status);
-    if (data.q) q = q.or(`client_name.ilike.%${data.q}%,project_title.ilike.%${data.q}%,invoice_ref.ilike.%${data.q}%`);
-    const { data: rows, error } = await q;
+    let query = supabaseAdmin
+      .from("payment_links")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (data.status && data.status !== "all") query = query.eq("status", data.status);
+    if (data.q) {
+      query = query.or(
+        `client_name.ilike.%${data.q}%,project_title.ilike.%${data.q}%,invoice_ref.ilike.%${data.q}%`,
+      );
+    }
+    const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
     return rows ?? [];
   });
 
 export const getLinkDetail = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
+  .inputValidator((data: { id: string }) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
     assertOwner(context.claims);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin;
     const [{ data: link }, { data: attempts }] = await Promise.all([
-      supabaseAdmin.from("payment_links").select("*").eq("id", data.id).maybeSingle(),
-      supabaseAdmin.from("payment_attempts").select("*").eq("link_id", data.id).order("created_at", { ascending: false }),
+      db.from("payment_links").select("*").eq("id", data.id).maybeSingle(),
+      db
+        .from("payment_attempts")
+        .select("*")
+        .eq("link_id", data.id)
+        .order("created_at", { ascending: false }),
     ]);
     if (!link) throw new Error("Not found");
     return { link, attempts: attempts ?? [] };
@@ -81,7 +113,7 @@ export const getLinkDetail = createServerFn({ method: "GET" })
 
 export const createPaymentLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => createLinkSchema.parse(d))
+  .inputValidator((data: unknown) => createLinkSchema.parse(data))
   .handler(async ({ data, context }) => {
     assertOwner(context.claims);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -112,6 +144,7 @@ export const createPaymentLink = createServerFn({ method: "POST" })
       .select("*")
       .single();
     if (error) throw new Error(error.message);
+
     await supabaseAdmin.from("audit_events").insert({
       actor_user_id: context.userId,
       action: "link.create",
@@ -124,8 +157,10 @@ export const createPaymentLink = createServerFn({ method: "POST" })
 
 export const updateLinkStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { id: string; status: "active" | "cancelled" | "draft" }) =>
-    z.object({ id: z.string().uuid(), status: z.enum(["active", "cancelled", "draft"]) }).parse(d),
+  .inputValidator((data: { id: string; status: "active" | "cancelled" | "draft" }) =>
+    z
+      .object({ id: z.string().uuid(), status: z.enum(["active", "cancelled", "draft"]) })
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     assertOwner(context.claims);
@@ -134,8 +169,9 @@ export const updateLinkStatus = createServerFn({ method: "POST" })
       .from("payment_links")
       .update({ status: data.status })
       .eq("id", data.id)
-      .in("status", ["draft", "active", "cancelled"]); // never mutate paid/expired
+      .in("status", ["draft", "active", "cancelled"]);
     if (error) throw new Error(error.message);
+
     await supabaseAdmin.from("audit_events").insert({
       actor_user_id: context.userId,
       action: `link.status.${data.status}`,
@@ -147,33 +183,42 @@ export const updateLinkStatus = createServerFn({ method: "POST" })
 
 export const duplicateLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
+  .inputValidator((data: { id: string }) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
     assertOwner(context.claims);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: src } = await supabaseAdmin.from("payment_links").select("*").eq("id", data.id).maybeSingle();
-    if (!src) throw new Error("Not found");
+    const { data: source } = await supabaseAdmin
+      .from("payment_links")
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (!source) throw new Error("Not found");
+
     const code = generatePublicCode();
-    const { data: row, error } = await supabaseAdmin.from("payment_links").insert({
-      public_code: code,
-      client_name: src.client_name,
-      client_email: src.client_email,
-      client_phone: src.client_phone,
-      client_country: src.client_country,
-      project_title: src.project_title,
-      description: src.description,
-      invoice_ref: src.invoice_ref,
-      base_amount_minor: src.base_amount_minor,
-      currency: src.currency,
-      allow_tip: src.allow_tip,
-      tip_presets: src.tip_presets,
-      tip_custom_allowed: src.tip_custom_allowed,
-      tip_min_minor: src.tip_min_minor,
-      tip_max_minor: src.tip_max_minor,
-      single_use: src.single_use,
-      status: "active",
-      created_by: context.userId,
-    }).select("*").single();
+    const { data: row, error } = await supabaseAdmin
+      .from("payment_links")
+      .insert({
+        public_code: code,
+        client_name: source.client_name,
+        client_email: source.client_email,
+        client_phone: source.client_phone,
+        client_country: source.client_country,
+        project_title: source.project_title,
+        description: source.description,
+        invoice_ref: source.invoice_ref,
+        base_amount_minor: source.base_amount_minor,
+        currency: source.currency,
+        allow_tip: source.allow_tip,
+        tip_presets: source.tip_presets,
+        tip_custom_allowed: source.tip_custom_allowed,
+        tip_min_minor: source.tip_min_minor,
+        tip_max_minor: source.tip_max_minor,
+        single_use: source.single_use,
+        status: "active",
+        created_by: context.userId,
+      })
+      .select("*")
+      .single();
     if (error) throw new Error(error.message);
     return row;
   });
@@ -189,15 +234,17 @@ export const getSettings = createServerFn({ method: "GET" })
 
 export const updateSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
-    z.object({
-      brand_name: z.string().min(1).max(120),
-      brand_tagline: z.string().max(240),
-      support_email: z.string().email().max(200),
-      support_phone: z.string().max(40).optional().nullable(),
-      enabled_currencies: z.array(z.string().length(3)).min(1),
-      default_tip_presets: z.array(z.number().int().min(0).max(100)).min(1).max(6),
-    }).parse(d),
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        brand_name: z.string().min(1).max(120),
+        brand_tagline: z.string().max(240),
+        support_email: z.string().email().max(200),
+        support_phone: z.string().max(40).optional().nullable(),
+        enabled_currencies: z.array(z.string().length(3)).min(1),
+        default_tip_presets: z.array(z.number().int().min(0).max(100)).min(1).max(6),
+      })
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     assertOwner(context.claims);

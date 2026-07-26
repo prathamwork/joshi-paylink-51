@@ -20,8 +20,8 @@ import { Route as AuthenticatedLinksIndexRouteImport } from './routes/_authentic
 import { Route as PayCodeSuccessRouteImport } from './routes/pay.$code.success'
 import { Route as AuthenticatedLinksNewRouteImport } from './routes/_authenticated/links.new'
 import { Route as AuthenticatedLinksIdRouteImport } from './routes/_authenticated/links.$id'
-import { Route as ApiPublicRazorpayWebhookRouteImport } from './routes/api/public/razorpay.webhook'
 import { Route as ApiPublicPayCodeRouteImport } from './routes/api/public/pay.$code'
+import { Route as ApiPublicCashfreeWebhookRouteImport } from './routes/api/public/cashfree.webhook'
 import { Route as ApiPublicPayCodeVerifyRouteImport } from './routes/api/public/pay.$code.verify'
 import { Route as ApiPublicPayCodeOrderRouteImport } from './routes/api/public/pay.$code.order'
 
@@ -79,17 +79,17 @@ const AuthenticatedLinksIdRoute = AuthenticatedLinksIdRouteImport.update({
   path: '/links/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicRazorpayWebhookRoute =
-  ApiPublicRazorpayWebhookRouteImport.update({
-    id: '/api/public/razorpay/webhook',
-    path: '/api/public/razorpay/webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicPayCodeRoute = ApiPublicPayCodeRouteImport.update({
   id: '/api/public/pay/$code',
   path: '/api/public/pay/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCashfreeWebhookRoute =
+  ApiPublicCashfreeWebhookRouteImport.update({
+    id: '/api/public/cashfree/webhook',
+    path: '/api/public/cashfree/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPayCodeVerifyRoute = ApiPublicPayCodeVerifyRouteImport.update({
   id: '/verify',
   path: '/verify',
@@ -112,8 +112,8 @@ export interface FileRoutesByFullPath {
   '/links/new': typeof AuthenticatedLinksNewRoute
   '/pay/$code/success': typeof PayCodeSuccessRoute
   '/links/': typeof AuthenticatedLinksIndexRoute
+  '/api/public/cashfree/webhook': typeof ApiPublicCashfreeWebhookRoute
   '/api/public/pay/$code': typeof ApiPublicPayCodeRouteWithChildren
-  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
   '/api/public/pay/$code/order': typeof ApiPublicPayCodeOrderRoute
   '/api/public/pay/$code/verify': typeof ApiPublicPayCodeVerifyRoute
 }
@@ -128,8 +128,8 @@ export interface FileRoutesByTo {
   '/links/new': typeof AuthenticatedLinksNewRoute
   '/pay/$code/success': typeof PayCodeSuccessRoute
   '/links': typeof AuthenticatedLinksIndexRoute
+  '/api/public/cashfree/webhook': typeof ApiPublicCashfreeWebhookRoute
   '/api/public/pay/$code': typeof ApiPublicPayCodeRouteWithChildren
-  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
   '/api/public/pay/$code/order': typeof ApiPublicPayCodeOrderRoute
   '/api/public/pay/$code/verify': typeof ApiPublicPayCodeVerifyRoute
 }
@@ -146,8 +146,8 @@ export interface FileRoutesById {
   '/_authenticated/links/new': typeof AuthenticatedLinksNewRoute
   '/pay/$code/success': typeof PayCodeSuccessRoute
   '/_authenticated/links/': typeof AuthenticatedLinksIndexRoute
+  '/api/public/cashfree/webhook': typeof ApiPublicCashfreeWebhookRoute
   '/api/public/pay/$code': typeof ApiPublicPayCodeRouteWithChildren
-  '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
   '/api/public/pay/$code/order': typeof ApiPublicPayCodeOrderRoute
   '/api/public/pay/$code/verify': typeof ApiPublicPayCodeVerifyRoute
 }
@@ -164,8 +164,8 @@ export interface FileRouteTypes {
     | '/links/new'
     | '/pay/$code/success'
     | '/links/'
+    | '/api/public/cashfree/webhook'
     | '/api/public/pay/$code'
-    | '/api/public/razorpay/webhook'
     | '/api/public/pay/$code/order'
     | '/api/public/pay/$code/verify'
   fileRoutesByTo: FileRoutesByTo
@@ -180,8 +180,8 @@ export interface FileRouteTypes {
     | '/links/new'
     | '/pay/$code/success'
     | '/links'
+    | '/api/public/cashfree/webhook'
     | '/api/public/pay/$code'
-    | '/api/public/razorpay/webhook'
     | '/api/public/pay/$code/order'
     | '/api/public/pay/$code/verify'
   id:
@@ -197,8 +197,8 @@ export interface FileRouteTypes {
     | '/_authenticated/links/new'
     | '/pay/$code/success'
     | '/_authenticated/links/'
+    | '/api/public/cashfree/webhook'
     | '/api/public/pay/$code'
-    | '/api/public/razorpay/webhook'
     | '/api/public/pay/$code/order'
     | '/api/public/pay/$code/verify'
   fileRoutesById: FileRoutesById
@@ -209,8 +209,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   SetupRoute: typeof SetupRoute
   PayCodeRoute: typeof PayCodeRouteWithChildren
+  ApiPublicCashfreeWebhookRoute: typeof ApiPublicCashfreeWebhookRoute
   ApiPublicPayCodeRoute: typeof ApiPublicPayCodeRouteWithChildren
-  ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -292,18 +292,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLinksIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/razorpay/webhook': {
-      id: '/api/public/razorpay/webhook'
-      path: '/api/public/razorpay/webhook'
-      fullPath: '/api/public/razorpay/webhook'
-      preLoaderRoute: typeof ApiPublicRazorpayWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/pay/$code': {
       id: '/api/public/pay/$code'
       path: '/api/public/pay/$code'
       fullPath: '/api/public/pay/$code'
       preLoaderRoute: typeof ApiPublicPayCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cashfree/webhook': {
+      id: '/api/public/cashfree/webhook'
+      path: '/api/public/cashfree/webhook'
+      fullPath: '/api/public/cashfree/webhook'
+      preLoaderRoute: typeof ApiPublicCashfreeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/pay/$code/verify': {
@@ -372,9 +372,19 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   SetupRoute: SetupRoute,
   PayCodeRoute: PayCodeRouteWithChildren,
+  ApiPublicCashfreeWebhookRoute: ApiPublicCashfreeWebhookRoute,
   ApiPublicPayCodeRoute: ApiPublicPayCodeRouteWithChildren,
-  ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

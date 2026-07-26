@@ -5,12 +5,38 @@ export const currencySchema = z.enum(CURRENCY_CODES as [string, ...string[]]);
 
 export const createLinkSchema = z.object({
   client_name: z.string().trim().min(1).max(120),
-  client_email: z.string().trim().email().max(200).optional().or(z.literal("").transform(() => undefined)),
-  client_phone: z.string().trim().max(40).optional().or(z.literal("").transform(() => undefined)),
-  client_country: z.string().trim().max(80).optional().or(z.literal("").transform(() => undefined)),
+  client_email: z
+    .string()
+    .trim()
+    .email()
+    .max(200)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  client_phone: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  client_country: z
+    .string()
+    .trim()
+    .max(80)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   project_title: z.string().trim().min(1).max(160),
-  description: z.string().trim().max(2000).optional().or(z.literal("").transform(() => undefined)),
-  invoice_ref: z.string().trim().max(80).optional().or(z.literal("").transform(() => undefined)),
+  description: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  invoice_ref: z
+    .string()
+    .trim()
+    .max(80)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   base_amount_minor: z.number().int().positive().max(10_000_000_000),
   currency: currencySchema,
   allow_tip: z.boolean().default(true),
@@ -34,8 +60,10 @@ export type OrderRequest = z.infer<typeof orderRequestSchema>;
 
 export const verifyRequestSchema = z.object({
   code: z.string().min(8).max(64),
-  razorpay_order_id: z.string().min(4).max(120),
-  razorpay_payment_id: z.string().min(4).max(120),
-  razorpay_signature: z.string().min(4).max(200),
+  order_id: z
+    .string()
+    .min(3)
+    .max(45)
+    .regex(/^[A-Za-z0-9_-]+$/),
 });
 export type VerifyRequest = z.infer<typeof verifyRequestSchema>;
