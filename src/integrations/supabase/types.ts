@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -79,13 +77,20 @@ export type Database = {
       }
       payment_attempts: {
         Row: {
+          bank_reference: string | null
           base_amount_minor: number
+          cashfree_cf_order_id: string | null
+          cashfree_order_id: string | null
+          cashfree_payment_id: string | null
+          cashfree_payment_session_id: string | null
           created_at: string
           currency: string
           error_code: string | null
           error_description: string | null
           id: string
           link_id: string
+          provider: string
+          provider_verified: boolean
           razorpay_order_id: string | null
           razorpay_payment_id: string | null
           signature_verified: boolean
@@ -95,13 +100,20 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          bank_reference?: string | null
           base_amount_minor: number
+          cashfree_cf_order_id?: string | null
+          cashfree_order_id?: string | null
+          cashfree_payment_id?: string | null
+          cashfree_payment_session_id?: string | null
           created_at?: string
           currency: string
           error_code?: string | null
           error_description?: string | null
           id?: string
           link_id: string
+          provider?: string
+          provider_verified?: boolean
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
           signature_verified?: boolean
@@ -111,13 +123,20 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          bank_reference?: string | null
           base_amount_minor?: number
+          cashfree_cf_order_id?: string | null
+          cashfree_order_id?: string | null
+          cashfree_payment_id?: string | null
+          cashfree_payment_session_id?: string | null
           created_at?: string
           currency?: string
           error_code?: string | null
           error_description?: string | null
           id?: string
           link_id?: string
+          provider?: string
+          provider_verified?: boolean
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
           signature_verified?: boolean
@@ -327,17 +346,15 @@ export type Tables<
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+      Row: infer Row
     }
-    ? R
+    ? Row
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer Row
       }
-      ? R
+      ? Row
       : never
     : never
 
@@ -354,15 +371,15 @@ export type TablesInsert<
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+      Insert: infer Insert
     }
-    ? I
+    ? Insert
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+        Insert: infer Insert
       }
-      ? I
+      ? Insert
       : never
     : never
 
@@ -379,15 +396,15 @@ export type TablesUpdate<
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+      Update: infer Update
     }
-    ? U
+    ? Update
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+        Update: infer Update
       }
-      ? U
+      ? Update
       : never
     : never
 
