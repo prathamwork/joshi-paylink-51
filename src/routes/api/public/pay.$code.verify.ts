@@ -2,6 +2,23 @@ import { createFileRoute } from "@tanstack/react-router";
 import { verifyRequestSchema } from "@/lib/schemas";
 import { getCashfreeOrder, providerAmountToMinor } from "@/lib/cashfree.server";
 import { isCurrency } from "@/lib/currency";
+import type { Tables } from "@/integrations/supabase/types";
+
+type AttemptReceipt = Pick<
+  Tables<"payment_attempts">,
+  | "cashfree_order_id"
+  | "cashfree_payment_id"
+  | "base_amount_minor"
+  | "tip_amount_minor"
+  | "total_amount_minor"
+  | "currency"
+  | "updated_at"
+>;
+
+type LinkReceipt = Pick<
+  Tables<"payment_links">,
+  "client_name" | "project_title" | "invoice_ref"
+>;
 
 export const Route = createFileRoute("/api/public/pay/$code/verify")({
   server: {
@@ -19,7 +36,7 @@ export const Route = createFileRoute("/api/public/pay/$code/verify")({
         const input = parsed.data;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const db = supabaseAdmin as any;
+        const db = supabaseAdmin;
 
         const { data: link } = await db
           .from("payment_links")
@@ -87,7 +104,7 @@ export const Route = createFileRoute("/api/public/pay/$code/verify")({
 
           return receiptResponse(
             "paid",
-            { ...attempt, status: "success", updated_at: new Date().toISOString() },
+            { ...attempt, updated_at: new Date().toISOString() },
             link,
           );
         }
@@ -99,7 +116,7 @@ export const Route = createFileRoute("/api/public/pay/$code/verify")({
             .eq("id", attempt.id);
           return receiptResponse(
             "failed",
-            { ...attempt, status: "expired", updated_at: new Date().toISOString() },
+            { ...attempt, updated_at: new Date().toISOString() },
             link,
             409,
           );
@@ -110,12 +127,7 @@ export const Route = createFileRoute("/api/public/pay/$code/verify")({
           .update({ status: "verification_pending", provider_verified: true })
           .eq("id", attempt.id)
           .in("status", ["initializing", "created", "pending", "verification_pending"]);
-        return receiptResponse(
-          "pending",
-          { ...attempt, status: "verification_pending" },
-          link,
-          202,
-        );
+        return receiptResponse("pending", attempt, link, 202);
       },
     },
   },
@@ -123,14 +135,14 @@ export const Route = createFileRoute("/api/public/pay/$code/verify")({
 
 function receiptResponse(
   state: "paid" | "pending" | "failed",
-  attempt: any,
-  link: any,
+  attempt: AttemptReceipt,
+  link: LinkReceipt,
   status = 200,
 ) {
   return json(
     {
       state,
-      orderId: attempt.cashfree_order_id,
+      orderId: attempt.cashfree_order_id ?? "",
       paymentId: attempt.cashfree_payment_id ?? null,
       baseMinor: Number(attempt.base_amount_minor),
       tipMinor: Number(attempt.tip_amount_minor),
