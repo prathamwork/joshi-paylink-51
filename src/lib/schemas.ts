@@ -34,8 +34,6 @@ export type OrderRequest = z.infer<typeof orderRequestSchema>;
 
 export const verifyRequestSchema = z.object({
   code: z.string().min(8).max(64),
-  razorpay_order_id: z.string().min(4).max(120),
-  razorpay_payment_id: z.string().min(4).max(120),
-  razorpay_signature: z.string().min(4).max(200),
+  order_id: z.string().min(3).max(45).regex(/^[A-Za-z0-9_-]+$/),
 });
 export type VerifyRequest = z.infer<typeof verifyRequestSchema>;
