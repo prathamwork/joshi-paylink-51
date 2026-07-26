@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getSettings, updateSettings } from "@/lib/admin.functions";
+import { getBusinessSettings, saveBusinessSettings } from "@/lib/settings.functions";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CURRENCIES } from "@/lib/currency";
 import { Checkbox } from "@/components/ui/checkbox";
+import { LoaderCircle, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -32,35 +33,72 @@ type SettingsForm = {
 };
 
 function SettingsPage() {
-  const getBusinessSettings = useServerFn(getSettings);
-  const saveSettings = useServerFn(updateSettings);
-  const { data } = useQuery({ queryKey: ["settings"], queryFn: () => getBusinessSettings() });
+  const getSettings = useServerFn(getBusinessSettings);
+  const saveSettings = useServerFn(saveBusinessSettings);
+  const queryClient = useQueryClient();
+  const settingsQuery = useQuery({
+    queryKey: ["settings"],
+    queryFn: () => getSettings(),
+    retry: 1,
+    staleTime: 60_000,
+  });
   const [form, setForm] = useState<SettingsForm | null>(null);
 
   useEffect(() => {
+    const data = settingsQuery.data;
     if (data && !form) {
       setForm({
-        brand_name: data.brand_name,
-        brand_tagline: data.brand_tagline,
-        support_email: data.support_email,
+        brand_name: data.brand_name ?? "Joshi Web Experts",
+        brand_tagline: data.brand_tagline ?? "",
+        support_email: data.support_email ?? "pratham.work3115@gmail.com",
         support_phone: data.support_phone ?? "",
-        enabled_currencies: data.enabled_currencies,
-        default_tip_presets: data.default_tip_presets,
+        enabled_currencies: data.enabled_currencies ?? ["SBD", "USD", "AUD", "INR"],
+        default_tip_presets: data.default_tip_presets ?? [5, 10, 15],
       });
     }
-  }, [data, form]);
+  }, [settingsQuery.data, form]);
 
   const mutation = useMutation({
-    mutationFn: () =>
-      saveSettings({ data: { ...form!, support_phone: form!.support_phone || null } }),
-    onSuccess: () => toast.success("Saved"),
+    mutationFn: () => {
+      if (!form) throw new Error("Settings are not ready yet");
+      return saveSettings({ data: { ...form, support_phone: form.support_phone || null } });
+    },
+    onSuccess: async () => {
+      toast.success("Saved");
+      await queryClient.invalidateQueries({ queryKey: ["settings"] });
+    },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Failed"),
   });
 
-  if (!form) {
+  if (settingsQuery.isError) {
+    const message =
+      settingsQuery.error instanceof Error
+        ? settingsQuery.error.message
+        : "The settings could not be loaded.";
+
     return (
       <AdminShell title="Settings">
-        <div className="text-sm text-muted-foreground">Loading…</div>
+        <Card className="glass max-w-3xl space-y-4 p-6">
+          <div>
+            <div className="font-semibold">Unable to load settings</div>
+            <p className="mt-1 text-sm text-muted-foreground">{message}</p>
+          </div>
+          <Button variant="outline" onClick={() => settingsQuery.refetch()}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Try again
+          </Button>
+        </Card>
+      </AdminShell>
+    );
+  }
+
+  if (settingsQuery.isPending || !form) {
+    return (
+      <AdminShell title="Settings">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <LoaderCircle className="h-4 w-4 animate-spin" />
+          Loading settings…
+        </div>
       </AdminShell>
     );
   }
@@ -153,7 +191,7 @@ function SettingsPage() {
           disabled={mutation.isPending || form.enabled_currencies.length === 0}
           className="bg-brand-gradient font-semibold text-primary-foreground shadow-glow"
         >
-          Save changes
+          {mutation.isPending ? "Saving…" : "Save changes"}
         </Button>
       </Card>
     </AdminShell>
