@@ -9,16 +9,39 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedLinksIndexRouteImport } from './routes/_authenticated/links.index'
 import { Route as ApiPublicRazorpayWebhookRouteImport } from './routes/api/public/razorpay.webhook'
 import { Route as ApiPublicPayCodeRouteImport } from './routes/api/public/pay.$code'
 import { Route as ApiPublicPayCodeVerifyRouteImport } from './routes/api/public/pay.$code.verify'
 import { Route as ApiPublicPayCodeOrderRouteImport } from './routes/api/public/pay.$code.order'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLinksIndexRoute = AuthenticatedLinksIndexRouteImport.update({
+  id: '/links/',
+  path: '/links/',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPublicRazorpayWebhookRoute =
   ApiPublicRazorpayWebhookRouteImport.update({
@@ -44,6 +67,9 @@ const ApiPublicPayCodeOrderRoute = ApiPublicPayCodeOrderRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/links/': typeof AuthenticatedLinksIndexRoute
   '/api/public/pay/$code': typeof ApiPublicPayCodeRouteWithChildren
   '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
   '/api/public/pay/$code/order': typeof ApiPublicPayCodeOrderRoute
@@ -51,6 +77,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/links': typeof AuthenticatedLinksIndexRoute
   '/api/public/pay/$code': typeof ApiPublicPayCodeRouteWithChildren
   '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
   '/api/public/pay/$code/order': typeof ApiPublicPayCodeOrderRoute
@@ -59,6 +88,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/links/': typeof AuthenticatedLinksIndexRoute
   '/api/public/pay/$code': typeof ApiPublicPayCodeRouteWithChildren
   '/api/public/razorpay/webhook': typeof ApiPublicRazorpayWebhookRoute
   '/api/public/pay/$code/order': typeof ApiPublicPayCodeOrderRoute
@@ -68,6 +101,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/links/'
     | '/api/public/pay/$code'
     | '/api/public/razorpay/webhook'
     | '/api/public/pay/$code/order'
@@ -75,6 +111,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/links'
     | '/api/public/pay/$code'
     | '/api/public/razorpay/webhook'
     | '/api/public/pay/$code/order'
@@ -82,6 +121,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/links/'
     | '/api/public/pay/$code'
     | '/api/public/razorpay/webhook'
     | '/api/public/pay/$code/order'
@@ -90,18 +133,48 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   ApiPublicPayCodeRoute: typeof ApiPublicPayCodeRouteWithChildren
   ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/links/': {
+      id: '/_authenticated/links/'
+      path: '/links'
+      fullPath: '/links/'
+      preLoaderRoute: typeof AuthenticatedLinksIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/razorpay/webhook': {
       id: '/api/public/razorpay/webhook'
@@ -134,6 +207,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedLinksIndexRoute: typeof AuthenticatedLinksIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedLinksIndexRoute: AuthenticatedLinksIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 interface ApiPublicPayCodeRouteChildren {
   ApiPublicPayCodeOrderRoute: typeof ApiPublicPayCodeOrderRoute
   ApiPublicPayCodeVerifyRoute: typeof ApiPublicPayCodeVerifyRoute
@@ -149,6 +235,8 @@ const ApiPublicPayCodeRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   ApiPublicPayCodeRoute: ApiPublicPayCodeRouteWithChildren,
   ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,
 }
