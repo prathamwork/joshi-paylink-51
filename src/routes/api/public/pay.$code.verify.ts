@@ -23,14 +23,16 @@ export const Route = createFileRoute("/api/public/pay/$code/verify")({
 
         const { data: link } = await db
           .from("payment_links")
-          .select("id, public_code, client_name, project_title, invoice_ref")
+          .select("id, public_code, client_name, project_title, invoice_ref, single_use")
           .eq("public_code", params.code)
           .maybeSingle();
         if (!link) return json({ error: "Link not found" }, 404);
 
         const { data: attempt } = await db
           .from("payment_attempts")
-          .select("id, link_id, cashfree_order_id, cashfree_payment_id, base_amount_minor, tip_amount_minor, total_amount_minor, currency, status, updated_at")
+          .select(
+            "id, link_id, cashfree_order_id, cashfree_payment_id, base_amount_minor, tip_amount_minor, total_amount_minor, currency, status, updated_at",
+          )
           .eq("cashfree_order_id", input.order_id)
           .eq("link_id", link.id)
           .maybeSingle();
@@ -41,13 +43,17 @@ export const Route = createFileRoute("/api/public/pay/$code/verify")({
         try {
           order = await getCashfreeOrder(input.order_id);
         } catch (error) {
-          console.error("[cashfree] verification lookup failed", error instanceof Error ? error.message : "unknown");
+          console.error(
+            "[cashfree] verification lookup failed",
+            error instanceof Error ? error.message : "unknown",
+          );
           return receiptResponse("pending", attempt, link, 202);
         }
 
         const amountMatches =
           order.order_currency === attempt.currency &&
-          providerAmountToMinor(Number(order.order_amount), attempt.currency) === Number(attempt.total_amount_minor);
+          providerAmountToMinor(Number(order.order_amount), attempt.currency) ===
+            Number(attempt.total_amount_minor);
 
         if (!amountMatches) {
           await db
@@ -56,7 +62,8 @@ export const Route = createFileRoute("/api/public/pay/$code/verify")({
               status: "failed",
               provider_verified: true,
               error_code: "ORDER_MISMATCH",
-              error_description: "Cashfree order amount or currency did not match the stored payment request.",
+              error_description:
+                "Cashfree order amount or currency did not match the stored payment request.",
             })
             .eq("id", attempt.id);
           return json({ error: "Payment verification mismatch" }, 409);
@@ -68,13 +75,20 @@ export const Route = createFileRoute("/api/public/pay/$code/verify")({
             .update({ status: "success", provider_verified: true })
             .eq("id", attempt.id)
             .neq("status", "success");
-          await db
-            .from("payment_links")
-            .update({ status: "paid" })
-            .eq("id", attempt.link_id)
-            .eq("status", "active");
 
-          return receiptResponse("paid", { ...attempt, status: "success", updated_at: new Date().toISOString() }, link);
+          if (link.single_use) {
+            await db
+              .from("payment_links")
+              .update({ status: "paid" })
+              .eq("id", attempt.link_id)
+              .eq("status", "active");
+          }
+
+          return receiptResponse(
+            "paid",
+            { ...attempt, status: "success", updated_at: new Date().toISOString() },
+            link,
+          );
         }
 
         if (["EXPIRED", "TERMINATED", "TERMINATION_REQUESTED"].includes(order.order_status)) {
@@ -82,7 +96,12 @@ export const Route = createFileRoute("/api/public/pay/$code/verify")({
             .from("payment_attempts")
             .update({ status: "expired", provider_verified: true })
             .eq("id", attempt.id);
-          return receiptResponse("failed", { ...attempt, status: "expired", updated_at: new Date().toISOString() }, link, 409);
+          return receiptResponse(
+            "failed",
+            { ...attempt, status: "expired", updated_at: new Date().toISOString() },
+            link,
+            409,
+          );
         }
 
         await db
@@ -90,7 +109,12 @@ export const Route = createFileRoute("/api/public/pay/$code/verify")({
           .update({ status: "verification_pending", provider_verified: true })
           .eq("id", attempt.id)
           .in("status", ["initializing", "created", "pending", "verification_pending"]);
-        return receiptResponse("pending", { ...attempt, status: "verification_pending" }, link, 202);
+        return receiptResponse(
+          "pending",
+          { ...attempt, status: "verification_pending" },
+          link,
+          202,
+        );
       },
     },
   },
