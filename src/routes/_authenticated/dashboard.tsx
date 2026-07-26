@@ -73,7 +73,7 @@ function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {data!.recentPayments.map((payment: any) => (
+                {data!.recentPayments.map((payment) => (
                   <tr key={payment.id} className="border-t border-border">
                     <td className="p-3">{payment.link_client}</td>
                     <td className="p-3 text-muted-foreground">{payment.link_project}</td>
