@@ -16,7 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background bg-hero-glow px-4">
-      <div className="glass rounded-3xl p-10 text-center max-w-md">
+      <div className="glass max-w-md rounded-3xl p-10 text-center">
         <h1 className="text-6xl font-bold">404</h1>
         <p className="mt-3 text-muted-foreground">This page doesn't exist.</p>
         <Link
@@ -37,16 +37,21 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   }, [error]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background bg-hero-glow px-4">
-      <div className="glass rounded-3xl p-10 text-center max-w-md">
+      <div className="glass max-w-md rounded-3xl p-10 text-center">
         <h1 className="text-xl font-semibold">Something went wrong</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Please try again. If it persists, contact support.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => { router.invalidate(); reset(); }}
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
             className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
-          >Try again</button>
+          >
+            Try again
+          </button>
           <a href="/" className="rounded-full border border-border px-5 py-2.5 text-sm">Home</a>
         </div>
       </div>
@@ -61,7 +66,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#0b1220" },
       { title: "Joshi Web Experts — Secure Payments" },
-      { name: "description", content: "Send and receive secure payments for web projects built by Pratham Joshi. Powered by Razorpay." },
+      {
+        name: "description",
+        content: "Send and receive secure payments for web projects built by Pratham Joshi. Powered by Cashfree Payments.",
+      },
       { property: "og:site_name", content: "Joshi Web Experts" },
       { property: "og:title", content: "Joshi Web Experts — Secure Payments" },
       { property: "og:description", content: "Premium payment experience for Joshi Web Experts clients." },
@@ -73,12 +81,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
+      { rel: "preconnect", href: "https://sdk.cashfree.com" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
       },
     ],
-    scripts: [{ src: "https://checkout.razorpay.com/v1/checkout.js", defer: true }],
+    scripts: [{ src: "https://sdk.cashfree.com/js/v3/cashfree.js", defer: true }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
