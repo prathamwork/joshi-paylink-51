@@ -177,7 +177,10 @@ async function safeProviderError(response: Response) {
 
   try {
     const data = JSON.parse(text) as { message?: string; type?: string; code?: string };
-    return [data.message, data.type, data.code].filter(Boolean).join(" · ").slice(0, 400) || "Provider error";
+    return (
+      [data.message, data.type, data.code].filter(Boolean).join(" · ").slice(0, 400) ||
+      "Provider error"
+    );
   } catch {
     return text.slice(0, 400);
   }

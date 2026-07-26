@@ -32,7 +32,10 @@ function AuthPage() {
       if (data.session) nav({ to: "/dashboard" });
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") { router.invalidate(); nav({ to: "/dashboard" }); }
+      if (event === "SIGNED_IN") {
+        router.invalidate();
+        nav({ to: "/dashboard" });
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, [nav, router]);
@@ -47,7 +50,8 @@ function AuthPage() {
           return;
         }
         const { error } = await supabase.auth.signUp({
-          email, password,
+          email,
+          password,
           options: { emailRedirectTo: window.location.origin + "/dashboard" },
         });
         if (error) throw error;
@@ -59,7 +63,9 @@ function AuthPage() {
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Sign-in failed");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -76,24 +82,60 @@ function AuthPage() {
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div>
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1" />
+              <Input
+                id="email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1"
+              />
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required minLength={8} autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1" />
+              <Input
+                id="password"
+                type="password"
+                required
+                minLength={8}
+                autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1"
+              />
             </div>
-            <Button type="submit" disabled={busy} className="w-full bg-brand-gradient text-primary-foreground shadow-glow font-semibold">
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : mode === "signin" ? "Sign in" : "Create owner account"}
+            <Button
+              type="submit"
+              disabled={busy}
+              className="w-full bg-brand-gradient text-primary-foreground shadow-glow font-semibold"
+            >
+              {busy ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : mode === "signin" ? (
+                "Sign in"
+              ) : (
+                "Create owner account"
+              )}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm text-muted-foreground">
             {mode === "signin" ? (
-              <button onClick={() => setMode("signup")} className="underline">First-time setup? Register {OWNER_EMAIL}</button>
+              <button onClick={() => setMode("signup")} className="underline">
+                First-time setup? Register {OWNER_EMAIL}
+              </button>
             ) : (
-              <button onClick={() => setMode("signin")} className="underline">Back to sign in</button>
+              <button onClick={() => setMode("signin")} className="underline">
+                Back to sign in
+              </button>
             )}
           </div>
-          <Link to="/" className="mt-6 block text-center text-xs text-muted-foreground hover:text-foreground">← Back to site</Link>
+          <Link
+            to="/"
+            className="mt-6 block text-center text-xs text-muted-foreground hover:text-foreground"
+          >
+            ← Back to site
+          </Link>
         </div>
       </div>
     </div>

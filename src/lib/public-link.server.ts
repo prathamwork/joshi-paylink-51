@@ -25,11 +25,7 @@ export type PublicLinkView = {
 export async function loadPublicLink(code: string): Promise<PublicLinkView | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const [{ data: link }, { data: settings }] = await Promise.all([
-    supabaseAdmin
-      .from("payment_links")
-      .select("*")
-      .eq("public_code", code)
-      .maybeSingle(),
+    supabaseAdmin.from("payment_links").select("*").eq("public_code", code).maybeSingle(),
     supabaseAdmin
       .from("business_settings")
       .select("brand_name, brand_tagline, support_email")
@@ -40,7 +36,11 @@ export async function loadPublicLink(code: string): Promise<PublicLinkView | nul
   if (!isCurrency(link.currency)) return null;
 
   let effective = link.status as PublicLinkView["effective_status"];
-  if (effective === "active" && link.expires_at && new Date(link.expires_at).getTime() < Date.now()) {
+  if (
+    effective === "active" &&
+    link.expires_at &&
+    new Date(link.expires_at).getTime() < Date.now()
+  ) {
     effective = "expired";
   }
 

@@ -29,16 +29,23 @@ function LinkDetail() {
   });
 
   if (isLoading || !data) {
-    return <AdminShell title="Link detail"><div className="text-sm text-muted-foreground">Loading…</div></AdminShell>;
+    return (
+      <AdminShell title="Link detail">
+        <div className="text-sm text-muted-foreground">Loading…</div>
+      </AdminShell>
+    );
   }
 
   const { link, attempts } = data;
-  const url = typeof window !== "undefined" ? `${window.location.origin}/pay/${link.public_code}` : "";
+  const url =
+    typeof window !== "undefined" ? `${window.location.origin}/pay/${link.public_code}` : "";
   const currency = isCurrency(link.currency) ? link.currency : "INR";
 
   return (
     <AdminShell title={link.project_title}>
-      <Link to="/links" className="text-xs text-muted-foreground">← All links</Link>
+      <Link to="/links" className="text-xs text-muted-foreground">
+        ← All links
+      </Link>
       <div className="mt-3 grid gap-5 lg:grid-cols-3">
         <Card className="glass p-6 lg:col-span-2">
           <div className="flex items-center justify-between">
@@ -46,16 +53,23 @@ function LinkDetail() {
               <div className="text-sm text-muted-foreground">
                 {link.client_name} · {link.client_email ?? "—"}
               </div>
-              {link.invoice_ref && <div className="text-xs text-muted-foreground">Invoice #{link.invoice_ref}</div>}
+              {link.invoice_ref && (
+                <div className="text-xs text-muted-foreground">Invoice #{link.invoice_ref}</div>
+              )}
             </div>
             <Badge variant="outline">{link.status}</Badge>
           </div>
-          <div className="mt-4 text-4xl font-bold">{formatMoney(Number(link.base_amount_minor), currency)}</div>
+          <div className="mt-4 text-4xl font-bold">
+            {formatMoney(Number(link.base_amount_minor), currency)}
+          </div>
           <div className="mt-1 text-xs text-muted-foreground">
-            Customer is charged in {currency}; INR settlement values are not displayed on the public page.
+            Customer is charged in {currency}; INR settlement values are not displayed on the public
+            page.
           </div>
           {link.description && (
-            <p className="mt-4 whitespace-pre-line text-sm text-muted-foreground">{link.description}</p>
+            <p className="mt-4 whitespace-pre-line text-sm text-muted-foreground">
+              {link.description}
+            </p>
           )}
           <div className="mt-6 flex items-center gap-2 rounded-lg border border-border bg-background/50 p-3 text-sm">
             <div className="flex-1 truncate font-mono">{url}</div>
@@ -70,7 +84,9 @@ function LinkDetail() {
               <Copy className="h-4 w-4" />
             </Button>
             <Button size="sm" asChild>
-              <a href={`/pay/${link.public_code}`} target="_blank" rel="noreferrer">Open</a>
+              <a href={`/pay/${link.public_code}`} target="_blank" rel="noreferrer">
+                Open
+              </a>
             </Button>
           </div>
         </Card>
@@ -84,7 +100,9 @@ function LinkDetail() {
               {attempts.map((attempt: any) => (
                 <li key={attempt.id} className="rounded-lg border border-border p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs uppercase tracking-wide text-muted-foreground">{attempt.status}</span>
+                    <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                      {attempt.status}
+                    </span>
                     <span className="text-right text-xs text-muted-foreground">
                       {new Date(attempt.created_at).toLocaleString()}
                     </span>
@@ -95,10 +113,12 @@ function LinkDetail() {
                       : `${attempt.total_amount_minor} ${attempt.currency}`}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Base {isCurrency(attempt.currency)
+                    Base{" "}
+                    {isCurrency(attempt.currency)
                       ? formatMoney(Number(attempt.base_amount_minor), attempt.currency)
                       : attempt.base_amount_minor}
-                    {" · "}Tip {isCurrency(attempt.currency)
+                    {" · "}Tip{" "}
+                    {isCurrency(attempt.currency)
                       ? formatMoney(Number(attempt.tip_amount_minor), attempt.currency)
                       : attempt.tip_amount_minor}
                   </div>

@@ -43,7 +43,7 @@ function Success() {
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     fetch(`/api/public/pay/${code}`)
-      .then((response) => response.ok ? response.json() : null)
+      .then((response) => (response.ok ? response.json() : null))
       .then((data: { support_email?: string } | null) => {
         if (!cancelled && data?.support_email) setSupportEmail(data.support_email);
       })
@@ -53,7 +53,9 @@ function Success() {
       if (!orderId) {
         if (!cancelled) {
           setLoading(false);
-          setMessage("The payment reference is missing. Please contact support before retrying payment.");
+          setMessage(
+            "The payment reference is missing. Please contact support before retrying payment.",
+          );
         }
         return;
       }
@@ -84,7 +86,9 @@ function Success() {
           timer = setTimeout(() => verify(attemptNumber + 1), 2000);
         } else {
           setLoading(false);
-          setMessage("Network error while verifying payment. Your card will not be charged again by refreshing this page.");
+          setMessage(
+            "Network error while verifying payment. Your card will not be charged again by refreshing this page.",
+          );
         }
       }
     }
@@ -124,7 +128,11 @@ function Success() {
                 : "We are checking the order directly with Cashfree. This normally takes only a few seconds."}
           </p>
 
-          {message && <p className="mt-4 rounded-lg border border-border p-3 text-sm text-muted-foreground">{message}</p>}
+          {message && (
+            <p className="mt-4 rounded-lg border border-border p-3 text-sm text-muted-foreground">
+              {message}
+            </p>
+          )}
 
           {receipt && (
             <dl className="mt-8 space-y-3 text-left text-sm">
@@ -133,7 +141,9 @@ function Success() {
               {receipt.invoiceRef && <Row label="Invoice" value={receipt.invoiceRef} />}
               {currency && <Row label="Base" value={formatMoney(receipt.baseMinor, currency)} />}
               {currency && <Row label="Tip" value={formatMoney(receipt.tipMinor, currency)} />}
-              {currency && <Row label="Total" value={formatMoney(receipt.totalMinor, currency)} strong />}
+              {currency && (
+                <Row label="Total" value={formatMoney(receipt.totalMinor, currency)} strong />
+              )}
               <Row label="Order ID" value={receipt.orderId} mono />
               {receipt.paymentId && <Row label="Payment ID" value={receipt.paymentId} mono />}
               <Row label="Updated" value={new Date(receipt.updatedAt).toLocaleString()} />
@@ -174,7 +184,9 @@ function Row({
   return (
     <div className="flex items-center justify-between gap-4 border-b border-border py-2">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className={`${mono ? "max-w-[65%] break-all font-mono text-xs" : "text-right"} ${strong ? "font-semibold" : ""}`}>
+      <dd
+        className={`${mono ? "max-w-[65%] break-all font-mono text-xs" : "text-right"} ${strong ? "font-semibold" : ""}`}
+      >
         {value}
       </dd>
     </div>

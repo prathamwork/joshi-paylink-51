@@ -37,7 +37,8 @@ export const Route = createFileRoute("/api/public/pay/$code/verify")({
           .eq("link_id", link.id)
           .maybeSingle();
         if (!attempt) return json({ error: "Payment attempt not found" }, 404);
-        if (!isCurrency(attempt.currency)) return json({ error: "Unsupported payment currency" }, 500);
+        if (!isCurrency(attempt.currency))
+          return json({ error: "Unsupported payment currency" }, 500);
 
         let order;
         try {

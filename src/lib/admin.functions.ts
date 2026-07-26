@@ -26,11 +26,15 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     const [links, attempts] = await Promise.all([
       db
         .from("payment_links")
-        .select("id,status,currency,base_amount_minor,created_at,client_name,project_title,public_code")
+        .select(
+          "id,status,currency,base_amount_minor,created_at,client_name,project_title,public_code",
+        )
         .order("created_at", { ascending: false }),
       db
         .from("payment_attempts")
-        .select("id,link_id,status,base_amount_minor,tip_amount_minor,total_amount_minor,currency,cashfree_payment_id,bank_reference,created_at")
+        .select(
+          "id,link_id,status,base_amount_minor,tip_amount_minor,total_amount_minor,currency,cashfree_payment_id,bank_reference,created_at",
+        )
         .eq("provider", "cashfree")
         .eq("status", "success")
         .order("created_at", { ascending: false })
@@ -43,7 +47,8 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     const tips: Record<string, number> = {};
 
     for (const attempt of successful) {
-      collected[attempt.currency] = (collected[attempt.currency] ?? 0) + Number(attempt.total_amount_minor);
+      collected[attempt.currency] =
+        (collected[attempt.currency] ?? 0) + Number(attempt.total_amount_minor);
       tips[attempt.currency] = (tips[attempt.currency] ?? 0) + Number(attempt.tip_amount_minor);
     }
 
@@ -153,7 +158,9 @@ export const createPaymentLink = createServerFn({ method: "POST" })
 export const updateLinkStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { id: string; status: "active" | "cancelled" | "draft" }) =>
-    z.object({ id: z.string().uuid(), status: z.enum(["active", "cancelled", "draft"]) }).parse(data),
+    z
+      .object({ id: z.string().uuid(), status: z.enum(["active", "cancelled", "draft"]) })
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     assertOwner(context.claims);

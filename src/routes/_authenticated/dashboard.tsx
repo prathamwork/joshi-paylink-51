@@ -99,12 +99,29 @@ function Dashboard() {
       </Card>
 
       <div className="glass mt-8 rounded-2xl p-5">
-        <Badge variant="secondary" className="mb-2">Cashfree setup checklist</Badge>
+        <Badge variant="secondary" className="mb-2">
+          Cashfree setup checklist
+        </Badge>
         <ul className="space-y-1.5 text-sm text-muted-foreground">
-          <li>• Add <code>CASHFREE_CLIENT_ID</code>, <code>CASHFREE_CLIENT_SECRET</code>, <code>CASHFREE_ENV</code> and <code>APP_BASE_URL</code> in your deployment secrets.</li>
-          <li>• Configure the signed webhook URL in the Cashfree dashboard (see <Link to="/setup" className="underline">Setup</Link>).</li>
-          <li>• Ask Cashfree to activate International Payment Gateway and the currencies you need, including SBD.</li>
-          <li>• Test every currency in sandbox before switching <code>CASHFREE_ENV</code> to <code>production</code>.</li>
+          <li>
+            • Add <code>CASHFREE_CLIENT_ID</code>, <code>CASHFREE_CLIENT_SECRET</code>,{" "}
+            <code>CASHFREE_ENV</code> and <code>APP_BASE_URL</code> in your deployment secrets.
+          </li>
+          <li>
+            • Configure the signed webhook URL in the Cashfree dashboard (see{" "}
+            <Link to="/setup" className="underline">
+              Setup
+            </Link>
+            ).
+          </li>
+          <li>
+            • Ask Cashfree to activate International Payment Gateway and the currencies you need,
+            including SBD.
+          </li>
+          <li>
+            • Test every currency in sandbox before switching <code>CASHFREE_ENV</code> to{" "}
+            <code>production</code>.
+          </li>
         </ul>
       </div>
     </AdminShell>
@@ -125,7 +142,8 @@ function Stat({
   return (
     <Card className="glass p-5">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{label}</span>{icon}
+        <span>{label}</span>
+        {icon}
       </div>
       <div className="mt-3 text-2xl font-semibold">{loading ? "…" : value}</div>
     </Card>
@@ -137,6 +155,8 @@ function money(byCurrency?: Record<string, number>) {
   const entries = Object.entries(byCurrency);
   if (entries.length === 0) return "—";
   return entries
-    .map(([currency, minor]) => (isCurrency(currency) ? formatMoney(minor, currency) : `${minor} ${currency}`))
+    .map(([currency, minor]) =>
+      isCurrency(currency) ? formatMoney(minor, currency) : `${minor} ${currency}`,
+    )
     .join(" · ");
 }

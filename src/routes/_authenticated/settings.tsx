@@ -51,13 +51,18 @@ function SettingsPage() {
   }, [data, form]);
 
   const mutation = useMutation({
-    mutationFn: () => saveSettings({ data: { ...form!, support_phone: form!.support_phone || null } }),
+    mutationFn: () =>
+      saveSettings({ data: { ...form!, support_phone: form!.support_phone || null } }),
     onSuccess: () => toast.success("Saved"),
     onError: (error) => toast.error(error instanceof Error ? error.message : "Failed"),
   });
 
   if (!form) {
-    return <AdminShell title="Settings"><div className="text-sm text-muted-foreground">Loading…</div></AdminShell>;
+    return (
+      <AdminShell title="Settings">
+        <div className="text-sm text-muted-foreground">Loading…</div>
+      </AdminShell>
+    );
   }
 
   return (
@@ -65,13 +70,23 @@ function SettingsPage() {
       <Card className="glass max-w-3xl space-y-5 p-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Brand name">
-            <Input value={form.brand_name} onChange={(event) => setForm({ ...form, brand_name: event.target.value })} />
+            <Input
+              value={form.brand_name}
+              onChange={(event) => setForm({ ...form, brand_name: event.target.value })}
+            />
           </Field>
           <Field label="Support email">
-            <Input type="email" value={form.support_email} onChange={(event) => setForm({ ...form, support_email: event.target.value })} />
+            <Input
+              type="email"
+              value={form.support_email}
+              onChange={(event) => setForm({ ...form, support_email: event.target.value })}
+            />
           </Field>
           <Field label="Support phone">
-            <Input value={form.support_phone} onChange={(event) => setForm({ ...form, support_phone: event.target.value })} />
+            <Input
+              value={form.support_phone}
+              onChange={(event) => setForm({ ...form, support_phone: event.target.value })}
+            />
           </Field>
           <Field label="Default tip presets (%)">
             <Input
@@ -91,7 +106,10 @@ function SettingsPage() {
         </div>
 
         <Field label="Brand tagline">
-          <Input value={form.brand_tagline} onChange={(event) => setForm({ ...form, brand_tagline: event.target.value })} />
+          <Input
+            value={form.brand_tagline}
+            onChange={(event) => setForm({ ...form, brand_tagline: event.target.value })}
+          />
         </Field>
 
         <div>
@@ -100,7 +118,10 @@ function SettingsPage() {
             {Object.entries(CURRENCIES).map(([currency, metadata]) => {
               const enabled = form.enabled_currencies.includes(currency);
               return (
-                <label key={currency} className="flex items-center gap-2 rounded-md border border-border p-2 text-sm">
+                <label
+                  key={currency}
+                  className="flex items-center gap-2 rounded-md border border-border p-2 text-sm"
+                >
                   <Checkbox
                     checked={enabled}
                     onCheckedChange={(checked) =>
@@ -112,13 +133,18 @@ function SettingsPage() {
                       })
                     }
                   />
-                  <span>{currency}{metadata.requiresIntl ? " ⚠️" : ""}</span>
+                  <span>
+                    {currency}
+                    {metadata.requiresIntl ? " ⚠️" : ""}
+                  </span>
                 </label>
               );
             })}
           </div>
           <p className="mt-2 text-xs text-warning">
-            ⚠️ Cashfree must activate International Payment Gateway and approve each non-INR currency. SBD, VUV, WST and PGK should be confirmed in your merchant dashboard before sending live links.
+            ⚠️ Cashfree must activate International Payment Gateway and approve each non-INR
+            currency. SBD, VUV, WST and PGK should be confirmed in your merchant dashboard before
+            sending live links.
           </p>
         </div>
 

@@ -34,7 +34,12 @@ export const Route = createFileRoute("/api/public/cashfree/webhook")({
 
         const eventId =
           request.headers.get("x-idempotency-key") ||
-          [event.type, orderId, payment?.cf_payment_id ?? "none", event.event_time ?? timestamp].join(":");
+          [
+            event.type,
+            orderId,
+            payment?.cf_payment_id ?? "none",
+            event.event_time ?? timestamp,
+          ].join(":");
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const db = supabaseAdmin as any;

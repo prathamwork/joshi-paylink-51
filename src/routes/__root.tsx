@@ -52,7 +52,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           >
             Try again
           </button>
-          <a href="/" className="rounded-full border border-border px-5 py-2.5 text-sm">Home</a>
+          <a href="/" className="rounded-full border border-border px-5 py-2.5 text-sm">
+            Home
+          </a>
         </div>
       </div>
     </div>
@@ -68,11 +70,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Joshi Web Experts — Secure Payments" },
       {
         name: "description",
-        content: "Send and receive secure payments for web projects built by Pratham Joshi. Powered by Cashfree Payments.",
+        content:
+          "Send and receive secure payments for web projects built by Pratham Joshi. Powered by Cashfree Payments.",
       },
       { property: "og:site_name", content: "Joshi Web Experts" },
       { property: "og:title", content: "Joshi Web Experts — Secure Payments" },
-      { property: "og:description", content: "Premium payment experience for Joshi Web Experts clients." },
+      {
+        property: "og:description",
+        content: "Premium payment experience for Joshi Web Experts clients.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

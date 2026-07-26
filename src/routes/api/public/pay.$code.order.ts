@@ -2,11 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { randomUUID } from "crypto";
 import { orderRequestSchema } from "@/lib/schemas";
 import { loadPublicLink } from "@/lib/public-link.server";
-import {
-  createCashfreeOrder,
-  requireAppBaseUrl,
-  requireCashfreeEnv,
-} from "@/lib/cashfree.server";
+import { createCashfreeOrder, requireAppBaseUrl, requireCashfreeEnv } from "@/lib/cashfree.server";
 
 const OPEN_ATTEMPT_STATUSES = ["initializing", "created", "pending", "verification_pending"];
 const INITIALIZING_GRACE_MS = 2 * 60 * 1000;
@@ -29,7 +25,8 @@ export const Route = createFileRoute("/api/public/pay/$code/order")({
 
         const view = await loadPublicLink(params.code);
         if (!view) return json({ error: "Link not found" }, 404);
-        if (view.effective_status !== "active") return json({ error: `Link ${view.effective_status}` }, 409);
+        if (view.effective_status !== "active")
+          return json({ error: `Link ${view.effective_status}` }, 409);
 
         // The browser only selects a permitted tip option. The payable amount is
         // always recalculated from the database on the server.
@@ -112,7 +109,10 @@ export const Route = createFileRoute("/api/public/pay/$code/order")({
             age <= INITIALIZING_GRACE_MS
           ) {
             return json(
-              { error: "Your secure payment session is being prepared. Please wait a few seconds and try again." },
+              {
+                error:
+                  "Your secure payment session is being prepared. Please wait a few seconds and try again.",
+              },
               409,
             );
           }
@@ -138,7 +138,10 @@ export const Route = createFileRoute("/api/public/pay/$code/order")({
 
         if (reserveError) {
           if (reserveError.code === "23505") {
-            return json({ error: "A payment session is already being prepared. Please retry in a moment." }, 409);
+            return json(
+              { error: "A payment session is already being prepared. Please retry in a moment." },
+              409,
+            );
           }
           console.error("[attempts] reservation failed", reserveError.message);
           return json({ error: "Could not initialize payment." }, 500);
@@ -173,10 +176,15 @@ export const Route = createFileRoute("/api/public/pay/$code/order")({
               status: "failed",
               error_code: "ORDER_CREATION_FAILED",
               error_description:
-                error instanceof Error ? error.message.slice(0, 500) : "Cashfree order creation failed",
+                error instanceof Error
+                  ? error.message.slice(0, 500)
+                  : "Cashfree order creation failed",
             })
             .eq("id", attempt.id);
-          console.error("[cashfree] order error", error instanceof Error ? error.message : "unknown");
+          console.error(
+            "[cashfree] order error",
+            error instanceof Error ? error.message : "unknown",
+          );
           return json({ error: "Payment provider unavailable. Please retry shortly." }, 502);
         }
 
