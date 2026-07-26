@@ -9,6 +9,7 @@ import {
 } from "@/lib/cashfree.server";
 
 const OPEN_ATTEMPT_STATUSES = ["initializing", "created", "pending", "verification_pending"];
+const INITIALIZING_GRACE_MS = 2 * 60 * 1000;
 const OPEN_ATTEMPT_MAX_AGE_MS = 30 * 60 * 1000;
 
 export const Route = createFileRoute("/api/public/pay/$code/order")({
@@ -65,7 +66,9 @@ export const Route = createFileRoute("/api/public/pay/$code/order")({
 
         const { data: openAttempt } = await db
           .from("payment_attempts")
-          .select("id, cashfree_order_id, cashfree_payment_session_id, base_amount_minor, tip_amount_minor, total_amount_minor, currency, created_at")
+          .select(
+            "id, status, cashfree_order_id, cashfree_payment_session_id, base_amount_minor, tip_amount_minor, total_amount_minor, currency, created_at",
+          )
           .eq("link_id", linkRow.id)
           .in("status", OPEN_ATTEMPT_STATUSES)
           .order("created_at", { ascending: false })
@@ -80,7 +83,11 @@ export const Route = createFileRoute("/api/public/pay/$code/order")({
             Number(openAttempt.total_amount_minor) === totalMinor &&
             openAttempt.currency === view.currency;
 
-          if (age <= OPEN_ATTEMPT_MAX_AGE_MS && openAttempt.cashfree_payment_session_id && amountsMatch) {
+          if (
+            age <= OPEN_ATTEMPT_MAX_AGE_MS &&
+            openAttempt.cashfree_payment_session_id &&
+            amountsMatch
+          ) {
             const { mode } = requireCashfreeEnv();
             return json({
               orderId: openAttempt.cashfree_order_id,
@@ -95,6 +102,19 @@ export const Route = createFileRoute("/api/public/pay/$code/order")({
               description: view.project_title,
               reused: true,
             });
+          }
+
+          // A double tap can arrive while the first provider call is still running.
+          // Do not expire that reservation until it has had time to finish.
+          if (
+            openAttempt.status === "initializing" &&
+            !openAttempt.cashfree_payment_session_id &&
+            age <= INITIALIZING_GRACE_MS
+          ) {
+            return json(
+              { error: "Your secure payment session is being prepared. Please wait a few seconds and try again." },
+              409,
+            );
           }
 
           await db.from("payment_attempts").update({ status: "expired" }).eq("id", openAttempt.id);
@@ -152,7 +172,8 @@ export const Route = createFileRoute("/api/public/pay/$code/order")({
             .update({
               status: "failed",
               error_code: "ORDER_CREATION_FAILED",
-              error_description: error instanceof Error ? error.message.slice(0, 500) : "Cashfree order creation failed",
+              error_description:
+                error instanceof Error ? error.message.slice(0, 500) : "Cashfree order creation failed",
             })
             .eq("id", attempt.id);
           console.error("[cashfree] order error", error instanceof Error ? error.message : "unknown");
