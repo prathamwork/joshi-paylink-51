@@ -29,7 +29,7 @@ export const Route = createFileRoute("/api/public/razorpay/webhook")({
           provider: "razorpay",
           event_id: eventId,
           event_type: event.event,
-          payload: event as unknown as object,
+          payload: JSON.parse(raw),
         });
         if (dedupeErr && !/duplicate/i.test(dedupeErr.message)) {
           console.error("[webhook] insert failed", dedupeErr.message);
