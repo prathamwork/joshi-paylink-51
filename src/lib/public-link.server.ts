@@ -60,7 +60,7 @@ export async function loadPublicLink(code: string): Promise<PublicLinkView | nul
     tip_custom_allowed: link.tip_custom_allowed,
     tip_min_minor: Number(link.tip_min_minor ?? 0),
     tip_max_minor: link.tip_max_minor == null ? null : Number(link.tip_max_minor),
-    status: link.status,
+    status: link.status as PublicLinkView["status"],
     expires_at: link.expires_at,
     effective_status: effective,
   };
