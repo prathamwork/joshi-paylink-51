@@ -5,6 +5,9 @@ import {
   verifyCashfreeWebhookSignature,
 } from "@/lib/cashfree.server";
 import { isCurrency } from "@/lib/currency";
+import type { Json } from "@/integrations/supabase/types";
+
+type AdminDatabaseClient = Awaited<ReturnType<typeof getAdminDatabaseClient>>;
 
 export const Route = createFileRoute("/api/public/cashfree/webhook")({
   server: {
@@ -22,8 +25,10 @@ export const Route = createFileRoute("/api/public/cashfree/webhook")({
         }
 
         let event: CashfreeWebhook;
+        let payload: Json;
         try {
-          event = JSON.parse(rawBody) as CashfreeWebhook;
+          payload = JSON.parse(rawBody) as Json;
+          event = payload as unknown as CashfreeWebhook;
         } catch {
           return new Response("Bad JSON", { status: 400 });
         }
@@ -41,14 +46,13 @@ export const Route = createFileRoute("/api/public/cashfree/webhook")({
             event.event_time ?? timestamp,
           ].join(":");
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const db = supabaseAdmin as any;
+        const db = await getAdminDatabaseClient();
 
         const { error: dedupeError } = await db.from("webhook_events").insert({
           provider: "cashfree",
           event_id: eventId,
           event_type: event.type,
-          payload: event,
+          payload,
         });
 
         if (dedupeError?.code === "23505") {
@@ -114,7 +118,6 @@ export const Route = createFileRoute("/api/public/cashfree/webhook")({
               .maybeSingle();
 
             if (link?.single_use) {
-              // Idempotent: only an active single-use request can become paid.
               await db
                 .from("payment_links")
                 .update({ status: "paid" })
@@ -168,7 +171,12 @@ export const Route = createFileRoute("/api/public/cashfree/webhook")({
   },
 });
 
-async function markProcessed(db: any, eventId: string) {
+async function getAdminDatabaseClient() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
+
+async function markProcessed(db: AdminDatabaseClient, eventId: string) {
   await db
     .from("webhook_events")
     .update({ processed_at: new Date().toISOString() })
