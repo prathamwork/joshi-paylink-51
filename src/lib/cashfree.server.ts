@@ -172,10 +172,13 @@ function normalizePhone(value?: string | null) {
 }
 
 async function safeProviderError(response: Response) {
+  const text = (await response.text()).slice(0, 2_000);
+  if (!text) return "Provider error";
+
   try {
-    const data = (await response.json()) as { message?: string; type?: string; code?: string };
+    const data = JSON.parse(text) as { message?: string; type?: string; code?: string };
     return [data.message, data.type, data.code].filter(Boolean).join(" · ").slice(0, 400) || "Provider error";
   } catch {
-    return (await response.text()).slice(0, 400) || "Provider error";
+    return text.slice(0, 400);
   }
 }
