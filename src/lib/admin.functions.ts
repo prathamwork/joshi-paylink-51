@@ -21,7 +21,7 @@ export const getDashboardStats = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     assertOwner(context.claims);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const db = supabaseAdmin as any;
+    const db = supabaseAdmin;
 
     const [links, attempts] = await Promise.all([
       db
@@ -55,11 +55,11 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     return {
       collectedByCurrency: collected,
       tipsByCurrency: tips,
-      paidCount: allLinks.filter((link: any) => link.status === "paid").length,
-      pendingCount: allLinks.filter((link: any) => link.status === "active").length,
+      paidCount: allLinks.filter((link) => link.status === "paid").length,
+      pendingCount: allLinks.filter((link) => link.status === "active").length,
       totalLinks: allLinks.length,
-      recentPayments: successful.map((attempt: any) => {
-        const link = allLinks.find((candidate: any) => candidate.id === attempt.link_id);
+      recentPayments: successful.map((attempt) => {
+        const link = allLinks.find((candidate) => candidate.id === attempt.link_id);
         return {
           ...attempt,
           link_client: link?.client_name ?? "—",
@@ -98,7 +98,7 @@ export const getLinkDetail = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     assertOwner(context.claims);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const db = supabaseAdmin as any;
+    const db = supabaseAdmin;
     const [{ data: link }, { data: attempts }] = await Promise.all([
       db.from("payment_links").select("*").eq("id", data.id).maybeSingle(),
       db
