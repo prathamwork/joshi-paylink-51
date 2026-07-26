@@ -97,7 +97,7 @@ function LinkDetail() {
             <div className="text-sm text-muted-foreground">No attempts yet.</div>
           ) : (
             <ul className="space-y-3 text-sm">
-              {attempts.map((attempt: any) => (
+              {attempts.map((attempt) => (
                 <li key={attempt.id} className="rounded-lg border border-border p-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs uppercase tracking-wide text-muted-foreground">
