@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/setup")({
-  head: () => ({ meta: [
-    { title: "Setup — Joshi Web Experts Payments" },
-    { name: "description", content: "Configure Razorpay and secrets for the payments console." },
-    { name: "robots", content: "noindex, nofollow" },
-  ]}),
+  head: () => ({
+    meta: [
+      { title: "Cashfree setup — Joshi Web Experts Payments" },
+      { name: "description", content: "Configure Cashfree International Payments for the payments console." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: Setup,
 });
 
@@ -14,47 +16,97 @@ function Setup() {
     <div className="min-h-screen bg-background bg-hero-glow">
       <div className="mx-auto max-w-3xl px-6 py-14">
         <Link to="/" className="text-xs text-muted-foreground">← Home</Link>
-        <h1 className="mt-4 text-4xl font-bold">Setup guide</h1>
-        <p className="mt-2 text-muted-foreground">Follow these steps to go live with Razorpay.</p>
+        <h1 className="mt-4 text-4xl font-bold">Cashfree setup guide</h1>
+        <p className="mt-2 text-muted-foreground">
+          Complete every step in sandbox before accepting a real international payment.
+        </p>
 
-        <Section n={1} title="Add your Razorpay secrets">
-          <p>In Project Settings → Secrets, add:</p>
-          <ul className="list-disc pl-6 mt-2 space-y-1 text-sm">
-            <li><code>RAZORPAY_KEY_ID</code> — your Razorpay Key ID (test or live)</li>
-            <li><code>RAZORPAY_KEY_SECRET</code> — matching Key Secret</li>
-            <li><code>RAZORPAY_WEBHOOK_SECRET</code> — the webhook secret you set in Razorpay</li>
-            <li><code>APP_BASE_URL</code> — your public site URL, e.g. <code>https://yourdomain.com</code></li>
+        <Section number={1} title="Activate Cashfree International Payment Gateway">
+          <p>
+            Complete Cashfree merchant onboarding for your Indian business and request International Payment Gateway activation. Ask Cashfree to confirm the exact currencies enabled on your account, especially <strong>SBD</strong>, VUV, WST and PGK.
+          </p>
+          <p>
+            Currency support in the application does not itself activate a currency on your Cashfree merchant account.
+          </p>
+        </Section>
+
+        <Section number={2} title="Add server-side secrets">
+          <p>In your hosting provider's environment settings, add:</p>
+          <ul className="mt-2 list-disc space-y-1 pl-6 text-sm">
+            <li><code>CASHFREE_CLIENT_ID</code> — sandbox or production App ID.</li>
+            <li><code>CASHFREE_CLIENT_SECRET</code> — the matching Cashfree secret key.</li>
+            <li><code>CASHFREE_ENV</code> — use <code>sandbox</code> while testing and <code>production</code> only after approval.</li>
+            <li><code>APP_BASE_URL</code> — the exact HTTPS origin, for example <code>https://pay.joshiwebexperts.com</code>.</li>
           </ul>
+          <p className="mt-2 text-sm">
+            Never prefix Cashfree secrets with <code>VITE_</code>, commit them to GitHub, or expose them to the browser.
+          </p>
         </Section>
 
-        <Section n={2} title="Configure your webhook in Razorpay">
-          <p>In the Razorpay Dashboard → Settings → Webhooks, add a webhook pointing to:</p>
-          <pre className="mt-2 rounded-lg bg-card p-3 text-xs font-mono overflow-x-auto">{"{APP_BASE_URL}/api/public/razorpay/webhook"}</pre>
-          <p className="mt-2 text-sm">Enable events: <code>payment.captured</code>, <code>order.paid</code>, <code>payment.failed</code>. Use the same webhook secret as above.</p>
+        <Section number={3} title="Configure the signed webhook">
+          <p>In Cashfree Developers → Webhooks, create a Payments webhook pointing to:</p>
+          <pre className="mt-2 overflow-x-auto rounded-lg bg-card p-3 font-mono text-xs">
+            {"{APP_BASE_URL}/api/public/cashfree/webhook"}
+          </pre>
+          <p className="mt-2 text-sm">Enable the latest webhook version and subscribe to:</p>
+          <ul className="list-disc space-y-1 pl-6 text-sm">
+            <li><code>PAYMENT_SUCCESS_WEBHOOK</code></li>
+            <li><code>PAYMENT_FAILED_WEBHOOK</code></li>
+            <li><code>PAYMENT_USER_DROPPED_WEBHOOK</code></li>
+          </ul>
+          <p className="mt-2 text-sm">
+            The server verifies <code>x-webhook-signature</code> against the untouched raw request body and deduplicates repeated events.
+          </p>
         </Section>
 
-        <Section n={3} title="Test with Razorpay test mode">
-          <p>Create a link in the admin, open it, and pay using Razorpay's <a className="underline" href="https://razorpay.com/docs/payments/payments/test-card-details/" target="_blank" rel="noreferrer">test card</a>. The dashboard should show a captured payment once the webhook fires.</p>
+        <Section number={4} title="Apply the Supabase migration">
+          <p>Apply the latest migration before opening checkout:</p>
+          <pre className="mt-2 overflow-x-auto rounded-lg bg-card p-3 font-mono text-xs">
+            supabase db push
+          </pre>
+          <p className="mt-2 text-sm">
+            The migration adds Cashfree order/payment fields, webhook deduplication and a database rule that blocks payment attempts for inactive or expired links.
+          </p>
         </Section>
 
-        <Section n={4} title="Enable international currencies (optional)">
-          <p>USD, GBP, EUR, AUD, CAD, NZD, SGD and AED require Razorpay to enable international payments on your account. Apply from the Razorpay Dashboard.</p>
+        <Section number={5} title="Test the complete sandbox flow">
+          <ol className="list-decimal space-y-1 pl-6 text-sm">
+            <li>Create an SBD payment link from the owner dashboard.</li>
+            <li>Open the public link in a private browser window.</li>
+            <li>Select no tip, a preset tip and a custom tip in separate tests.</li>
+            <li>Complete Cashfree sandbox checkout and confirm the return page.</li>
+            <li>Verify the signed webhook changes the attempt to success and produces a printable receipt.</li>
+            <li>Test failure, customer abandonment, expiry and duplicate-click behaviour.</li>
+          </ol>
         </Section>
 
-        <Section n={5} title="Go live">
-          <p>Swap the test keys for live keys in Secrets, update the webhook to the live endpoint's URL, and you're ready.</p>
+        <Section number={6} title="Go live carefully">
+          <p>
+            Replace sandbox credentials with production credentials, set <code>CASHFREE_ENV=production</code>, confirm the live webhook, and send a small internal live payment first.
+          </p>
+          <p>
+            The customer page shows only the invoice currency, such as SBD. It does not show your INR settlement value.
+          </p>
         </Section>
       </div>
     </div>
   );
 }
 
-function Section({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
+function Section({
+  number,
+  title,
+  children,
+}: {
+  number: number;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="mt-8 glass rounded-2xl p-6">
-      <div className="text-xs text-muted-foreground">Step {n}</div>
-      <h2 className="text-xl font-semibold mt-1">{title}</h2>
-      <div className="mt-3 text-sm text-foreground/90 space-y-2">{children}</div>
+    <section className="glass mt-8 rounded-2xl p-6">
+      <div className="text-xs text-muted-foreground">Step {number}</div>
+      <h2 className="mt-1 text-xl font-semibold">{title}</h2>
+      <div className="mt-3 space-y-2 text-sm text-foreground/90">{children}</div>
     </section>
   );
 }
