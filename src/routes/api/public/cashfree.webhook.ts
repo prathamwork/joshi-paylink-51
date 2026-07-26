@@ -71,7 +71,8 @@ export const Route = createFileRoute("/api/public/cashfree/webhook")({
           const amountMatches =
             payment?.payment_amount == null ||
             (isCurrency(attempt.currency) &&
-              providerAmountToMinor(Number(payment.payment_amount), attempt.currency) === Number(attempt.total_amount_minor));
+              providerAmountToMinor(Number(payment.payment_amount), attempt.currency) ===
+                Number(attempt.total_amount_minor));
 
           if (!currencyMatches || !amountMatches) {
             await db
@@ -80,7 +81,8 @@ export const Route = createFileRoute("/api/public/cashfree/webhook")({
                 status: "failed",
                 provider_verified: true,
                 error_code: "WEBHOOK_MISMATCH",
-                error_description: "Cashfree webhook amount or currency did not match the stored attempt.",
+                error_description:
+                  "Cashfree webhook amount or currency did not match the stored attempt.",
               })
               .eq("id", attempt.id);
             await markProcessed(db, eventId);
@@ -100,12 +102,20 @@ export const Route = createFileRoute("/api/public/cashfree/webhook")({
               })
               .eq("id", attempt.id);
 
-            // Idempotent and single-use safe: only an active request can become paid.
-            await db
+            const { data: link } = await db
               .from("payment_links")
-              .update({ status: "paid" })
+              .select("single_use")
               .eq("id", attempt.link_id)
-              .eq("status", "active");
+              .maybeSingle();
+
+            if (link?.single_use) {
+              // Idempotent: only an active single-use request can become paid.
+              await db
+                .from("payment_links")
+                .update({ status: "paid" })
+                .eq("id", attempt.link_id)
+                .eq("status", "active");
+            }
           } else if (event.type === "PAYMENT_FAILED_WEBHOOK") {
             await db
               .from("payment_attempts")
@@ -116,7 +126,9 @@ export const Route = createFileRoute("/api/public/cashfree/webhook")({
                 provider_verified: true,
                 error_code: event.data?.error_details?.error_code ?? "PAYMENT_FAILED",
                 error_description:
-                  event.data?.error_details?.error_description ?? payment?.payment_message ?? "Payment failed",
+                  event.data?.error_details?.error_description ??
+                  payment?.payment_message ??
+                  "Payment failed",
               })
               .eq("id", attempt.id)
               .neq("status", "success");
@@ -129,7 +141,8 @@ export const Route = createFileRoute("/api/public/cashfree/webhook")({
                 bank_reference: payment?.bank_reference ?? null,
                 provider_verified: true,
                 error_code: "USER_DROPPED",
-                error_description: payment?.payment_message ?? "Customer left checkout before completing payment.",
+                error_description:
+                  payment?.payment_message ?? "Customer left checkout before completing payment.",
               })
               .eq("id", attempt.id)
               .neq("status", "success");
@@ -137,7 +150,10 @@ export const Route = createFileRoute("/api/public/cashfree/webhook")({
 
           await markProcessed(db, eventId);
         } catch (error) {
-          console.error("[cashfree webhook] processing error", error instanceof Error ? error.message : "unknown");
+          console.error(
+            "[cashfree webhook] processing error",
+            error instanceof Error ? error.message : "unknown",
+          );
           return new Response("Processing error", { status: 500 });
         }
 
