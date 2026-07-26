@@ -15,10 +15,7 @@ type AttemptReceipt = Pick<
   | "updated_at"
 >;
 
-type LinkReceipt = Pick<
-  Tables<"payment_links">,
-  "client_name" | "project_title" | "invoice_ref"
->;
+type LinkReceipt = Pick<Tables<"payment_links">, "client_name" | "project_title" | "invoice_ref">;
 
 export const Route = createFileRoute("/api/public/pay/$code/verify")({
   server: {
